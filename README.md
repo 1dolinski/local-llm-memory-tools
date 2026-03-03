@@ -2,6 +2,8 @@
 
 ![Hero Banner](docs/hero.png)
 
+![Demo Screenshot](docs/demo.png)
+
 Cloud AI knows everything about you and nothing stays on your machine. Your conversations, preferences, and context live on someone else's server. Local models fix the privacy problem but create new ones — they forget everything between sessions, can't search their own history, and have no way to call external services.
 
 This project solves three problems:
@@ -38,7 +40,7 @@ npm install -g @tobilu/qmd
 
 ### 3. Get an APINow Private Key
 
-[APINow](https://apinow.fun) uses the **x402 payment protocol** — your AI pays for API calls with **USDC** using an EVM private key. No API keys, no subscriptions.
+[APINow](https://www.APINow.fun) uses the **x402 payment protocol** — your AI pays for API calls with **USDC** using an EVM private key. No API keys, no subscriptions.
 
 1. Use any EVM wallet (MetaMask, Coinbase Wallet, etc.) or generate a new key
 2. Fund the wallet with USDC on **Base** — even $1 is enough for hundreds of API calls
@@ -141,7 +143,7 @@ The assistant's entire operational history (conversations, saved memories, task 
 
 ### APINow — x402 Tool Calling
 
-[APINow](https://apinow.fun) is an API marketplace that uses the **x402 payment protocol** for machine-to-machine API access:
+[APINow](https://www.APINow.fun) is an API marketplace that uses the **x402 payment protocol** for machine-to-machine API access (integrated here via the [apinow-sdk](https://www.npmjs.com/package/apinow-sdk)):
 
 - **Vectorized API search** — find relevant APIs by natural language description
 - **x402 payments** — APIs are paid per-call using **USDC** with your private key, no subscriptions or API keys per service
@@ -181,6 +183,8 @@ you> my zodiac is cancer, what's my horoscope
 
 assistant> Today's horoscope for Cancer: ...
 ```
+
+*(This example automatically discovers and calls the [gg402/horoscope](https://www.apinow.fun/try/gg402/horoscope?tab=try) API on APINow, handling the microtransaction in the background.)*
 
 ### Commands
 
