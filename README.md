@@ -4,6 +4,80 @@ A fully local AI chat assistant with persistent memory, vectorized document sear
 
 Built on **Qwen 3.5:9B** via Ollama, with **QMD** for local vectorized memory/search and **APINow** for x402-protocol API access.
 
+## Quick Start
+
+### 1. Install Ollama
+
+Download from [ollama.com](https://ollama.com), then pull the model:
+
+```bash
+# Install Ollama (macOS)
+brew install ollama
+
+# Start the server
+ollama serve
+
+# Pull Qwen 3.5:9B (~5.5GB)
+ollama pull qwen3.5:9b
+```
+
+### 2. Install QMD
+
+[QMD](https://github.com/nicholasgasior/qmd) is a local document search engine with BM25 + vector hybrid search.
+
+```bash
+# macOS
+brew install nicholasgasior/tools/qmd
+
+# Linux (download binary)
+curl -L https://github.com/nicholasgasior/qmd/releases/latest/download/qmd-linux-amd64 -o /usr/local/bin/qmd
+chmod +x /usr/local/bin/qmd
+
+# Verify
+qmd --version
+```
+
+### 3. Get an APINow Private Key
+
+[APINow](https://apinow.fun) uses the **x402 payment protocol** — your AI pays for API calls with **USDC** using an EVM private key. No API keys, no subscriptions.
+
+1. Use any EVM wallet (MetaMask, Coinbase Wallet, etc.) or generate a new key
+2. Fund the wallet with USDC on **Base** — even $1 is enough for hundreds of API calls
+3. Copy the private key
+
+### 4. Clone & Run
+
+```bash
+git clone https://github.com/1dolinski/local-llm-memory-tools.git
+cd local-llm-memory-tools
+npm install
+
+# Set up your private key
+cp .env.example .env
+# Edit .env and paste your private key
+```
+
+Your `.env` file should look like:
+
+```env
+# EVM private key for USDC payments via APINow (x402 protocol)
+PRIVATE_KEY=0xabc123...your_private_key_here
+
+# Optional: override the default model
+# OLLAMA_MODEL=qwen3.5:9b
+```
+
+Then start chatting:
+
+```bash
+npm start
+
+# Or with verbose logging (token counts, search timing, tool calls)
+npm run start:verbose
+```
+
+---
+
 ## Why Qwen 3.5:9B?
 
 Qwen 3.5:9B punches way above its weight class. It outperforms models 10-15x its size on several benchmarks and holds its own against frontier models — all while running locally at **~15 tok/s on an M5 MacBook Pro (24GB)**.
@@ -70,7 +144,7 @@ The assistant's entire operational history (conversations, saved memories, task 
 
 [APINow](https://apinow.fun) is an API marketplace that uses the **x402 payment protocol** for machine-to-machine API access:
 
-- **Vectorized API search** — find relevant APIs by describing what you need
+- **Vectorized API search** — find relevant APIs by natural language description
 - **x402 payments** — APIs are paid per-call using **USDC** with your private key, no subscriptions or API keys per service
 - **Evals** — tools on APINow are vetted through evaluations so the AI can trust tool quality
 - **Deterministic routing** — the router matches user intent to known tools instantly, or discovers new ones via search
@@ -90,49 +164,6 @@ The router runs **before** the main LLM to handle API calls reliably:
 ### Task Management
 
 Built-in todo / upcoming / done lists managed through natural language. Tasks persist across sessions.
-
-## Setup
-
-### Prerequisites
-
-- [Ollama](https://ollama.com) running locally
-- [QMD](https://github.com/nicholasgasior/qmd) CLI installed
-- Node.js 18+
-
-### Install
-
-```bash
-git clone https://github.com/YOUR_USERNAME/local-llm-memory-tools.git
-cd local-llm-memory-tools
-npm install
-ollama pull qwen3.5:9b
-```
-
-### Configure
-
-Create a `.env` file with your USDC private key for APINow payments:
-
-```
-PRIVATE_KEY=0x...
-```
-
-Optionally set a different model:
-
-```
-OLLAMA_MODEL=qwen3.5:9b
-```
-
-### Run
-
-```bash
-npm start
-```
-
-With verbose logging (timestamps, token counts, search details, tool calls):
-
-```bash
-npm run start:verbose
-```
 
 ## Usage
 
