@@ -16,7 +16,7 @@ Built on **Qwen 3.5:9B** via Ollama, **QMD** for vectorized memory/search, and *
 
 ### 1. Install Ollama
 
-Download from [ollama.com](https://ollama.com), then pull the model:
+Download from [ollama.com](https://ollama.com), then pull the model ([Qwen 3.5:9B](https://ollama.com/library/qwen3.5:latest)):
 
 ```bash
 # Install Ollama (macOS)
@@ -28,7 +28,7 @@ ollama run qwen3.5:9b
 
 ### 2. Install QMD
 
-[QMD](https://github.com/nicholasgasior/qmd) is a local document search engine with BM25 + vector hybrid search.
+[QMD](https://github.com/tobi/qmd) is a local document search engine with BM25 + vector hybrid search.
 
 ```bash
 npm install -g @tobilu/qmd
@@ -127,7 +127,7 @@ On startup, if conversation history exists but no memories have been extracted y
 
 ### QMD — Vectorized Local Memory & Search
 
-[QMD](https://github.com/nicholasgasior/qmd) provides the local knowledge layer:
+[QMD](https://github.com/tobi/qmd) provides the local knowledge layer:
 
 - **BM25 keyword search** — fast exact matching across all indexed docs
 - **Hybrid deep search** — BM25 + vector search + query expansion + LLM reranking
