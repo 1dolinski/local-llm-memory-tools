@@ -22,11 +22,8 @@ Download from [ollama.com](https://ollama.com), then pull the model:
 # Install Ollama (macOS)
 brew install ollama
 
-# Start the server
-ollama serve
-
-# Pull Qwen 3.5:9B (~5.5GB)
-ollama pull qwen3.5:9b
+# Pull and start Qwen 3.5:9B (~5.5GB)
+ollama run qwen3.5:9b
 ```
 
 ### 2. Install QMD
