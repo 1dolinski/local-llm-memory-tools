@@ -1,7 +1,10 @@
 /**
- * Quick generation benchmark: measures eval_count / total_duration via Ollama /api/generate.
+ * Ollama generation benchmark.
+ * Primary metric: eval_count / eval_duration (decode only — what people mean by "tok/s").
+ * total_duration also includes model load + prompt prefill; first run is especially skewed.
+ *
  * Usage: npm run benchmark
- * Optional: OLLAMA_MODEL, OLLAMA_HOST, BENCH_TOKENS (default 80)
+ * Optional: OLLAMA_MODEL, OLLAMA_HOST, BENCH_TOKENS (default 80), BENCH_NO_WARMUP=1
  */
 import { config } from 'dotenv';
 
@@ -12,6 +15,7 @@ const MODEL_REQUESTED =
   process.env.OLLAMA_MODEL ||
   'kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
 const NUM_PREDICT = Math.min(512, Math.max(16, Number(process.env.BENCH_TOKENS || 80)));
+const NO_WARMUP = process.env.BENCH_NO_WARMUP === '1';
 
 /** Use the exact tag Ollama registered (e.g. ...:latest) to avoid resolution quirks. */
 function resolveInstalledModel(requested: string, installed: string[]): string {
@@ -48,6 +52,40 @@ function printLoadFailureHelp(body: string, installedName: string): void {
   console.error('6. Fallback: OLLAMA_MODEL=qwen3.5:9b npm run benchmark\n');
 }
 
+interface GenerateDone {
+  eval_count?: number;
+  total_duration?: number;
+  load_duration?: number;
+  prompt_eval_count?: number;
+  prompt_eval_duration?: number;
+  eval_duration?: number;
+}
+
+async function generate(model: string, prompt: string, numPredict: number): Promise<GenerateDone> {
+  const genRes = await fetch(`${OLLAMA_HOST}/api/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      prompt,
+      stream: false,
+      options: { num_predict: numPredict },
+    }),
+  });
+  if (!genRes.ok) {
+    const t = await genRes.text();
+    const err = new Error(t) as Error & { status: number; body: string };
+    err.status = genRes.status;
+    err.body = t;
+    throw err;
+  }
+  return (await genRes.json()) as GenerateDone;
+}
+
+function nsToSec(n?: number): number {
+  return (n ?? 0) / 1e9;
+}
+
 async function main(): Promise<void> {
   const tagsRes = await fetch(`${OLLAMA_HOST}/api/tags`);
   if (!tagsRes.ok) {
@@ -70,48 +108,63 @@ async function main(): Promise<void> {
     console.log('resolved model tag:', MODEL, '(from', MODEL_REQUESTED + ')');
   }
 
-  const t0 = performance.now();
-  const genRes = await fetch(`${OLLAMA_HOST}/api/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: MODEL,
-      prompt: 'In one short sentence, what is 2+2?',
-      stream: false,
-      options: { num_predict: NUM_PREDICT },
-    }),
-  });
-  const wallMs = performance.now() - t0;
+  if (!NO_WARMUP) {
+    process.stdout.write('warmup (loads weights into memory)... ');
+    try {
+      await generate(MODEL, 'Say hi.', 8);
+      console.log('done');
+    } catch (e: any) {
+      console.log('');
+      console.error('Warmup failed', e.status, e.body || e.message);
+      if (e.status === 500 && String(e.body).includes('unable to load model')) {
+        printLoadFailureHelp(e.body, MODEL);
+      }
+      process.exit(1);
+    }
+  }
 
-  if (!genRes.ok) {
-    const t = await genRes.text();
-    console.error('Generate failed', genRes.status, t);
-    if (genRes.status === 500 && t.includes('unable to load model')) {
-      printLoadFailureHelp(t, MODEL);
+  const t0 = performance.now();
+  let d: GenerateDone;
+  try {
+    d = await generate(
+      MODEL,
+      'In one short sentence, what is 2+2?',
+      NUM_PREDICT
+    );
+  } catch (e: any) {
+    console.error('Generate failed', e.status, e.body || e.message);
+    if (e.status === 500 && String(e.body).includes('unable to load model')) {
+      printLoadFailureHelp(e.body, MODEL);
     }
     process.exit(1);
   }
+  const wallMs = performance.now() - t0;
 
-  const d = (await genRes.json()) as {
-    eval_count?: number;
-    total_duration?: number;
-    prompt_eval_count?: number;
-    response?: string;
-  };
-
-  const sec = (d.total_duration ?? 0) / 1e9;
   const ev = d.eval_count ?? 0;
-  const promptTok = d.prompt_eval_count;
+  const evalSec = nsToSec(d.eval_duration);
+  const loadSec = nsToSec(d.load_duration);
+  const promptSec = nsToSec(d.prompt_eval_duration);
+  const totalSec = nsToSec(d.total_duration);
 
   console.log('model:', MODEL);
   console.log('num_predict cap:', NUM_PREDICT);
-  if (promptTok != null) console.log('prompt_eval_count:', promptTok);
+  if (d.prompt_eval_count != null) console.log('prompt_eval_count:', d.prompt_eval_count);
   console.log('eval_count (completion tokens):', ev);
-  console.log('ollama total_duration_s:', sec.toFixed(2));
+  console.log('load_duration_s:', loadSec.toFixed(3), '(often ~0 after warmup)');
+  console.log('prompt_eval_duration_s:', promptSec.toFixed(3));
+  console.log('eval_duration_s (decode only):', evalSec.toFixed(3));
+  console.log('total_duration_s (load+prefill+decode):', totalSec.toFixed(3));
   console.log('wall_clock_s:', (wallMs / 1000).toFixed(2));
-  if (ev > 0 && sec > 0) {
-    console.log('tok/s (eval_count / total_duration):', (ev / sec).toFixed(2));
+  console.log('');
+  if (ev > 0 && evalSec > 0) {
+    console.log('tok/s (decode, eval_count / eval_duration):', (ev / evalSec).toFixed(2), '← use this for "how fast is generation"');
   }
+  if (ev > 0 && totalSec > 0) {
+    console.log('tok/s (end-to-end, eval_count / total_duration):', (ev / totalSec).toFixed(2), '(includes prefill; inflated if no warmup)');
+  }
+  console.log('');
+  console.log('Tip: Old script used total_duration only — that mixes load + prefill + decode.');
+  console.log('If decode tok/s is still low, check Activity Monitor (GPU), memory pressure, and `ollama ps`.');
 }
 
 main().catch((e) => {

@@ -34,7 +34,7 @@ ollama run kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
 
 Other community builds: [`gag0/qwen35-opus-distil`](https://ollama.com/gag0/qwen35-opus-distil), [`sinhang/qwen3.5-claude-4.6-opus`](https://ollama.com/sinhang/qwen3.5-claude-4.6-opus).
 
-**Check speed after pull:** from the repo root, `npm run benchmark` prints completion `eval_count`, wall time, and **tok/s** (uses `OLLAMA_MODEL` from `.env` if set).
+**Check speed after pull:** `npm run benchmark` runs a short **warmup** then reports **tok/s from decode time** (`eval_count / eval_duration`). The older “total_duration only” number mixes model load + prompt prefill + generation and looks artificially low (e.g. ~1 tok/s on a fast machine). Uses `OLLAMA_MODEL` from `.env` if set.
 
 Smaller GPU? Use a lighter model, e.g. `OLLAMA_MODEL=qwen3.5:9b` after `ollama pull qwen3.5:9b`.
 
