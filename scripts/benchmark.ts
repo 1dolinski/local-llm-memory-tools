@@ -10,7 +10,7 @@ config();
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
 const MODEL_REQUESTED =
   process.env.OLLAMA_MODEL ||
-  'hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
+  'kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
 const NUM_PREDICT = Math.min(512, Math.max(16, Number(process.env.BENCH_TOKENS || 80)));
 
 /** Use the exact tag Ollama registered (e.g. ...:latest) to avoid resolution quirks. */
@@ -40,7 +40,12 @@ function printLoadFailureHelp(body: string, installedName: string): void {
   console.error(`   ollama pull ${JSON.stringify(pullName)}`);
   console.error('3. Upgrade Ollama: brew upgrade ollama  (needs recent llama.cpp for some GGUFs)');
   console.error('4. Same Ollama for pull + benchmark (not Docker vs menu-bar app).');
-  console.error('5. Fallback: OLLAMA_MODEL=qwen3.5:9b npm run benchmark\n');
+  console.error('5. If you used hf.co/Jackrong/... — that blob often fails in Ollama; try:');
+  console.error(
+    '   ollama pull kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF'
+  );
+  console.error('   OLLAMA_MODEL=kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF npm run benchmark');
+  console.error('6. Fallback: OLLAMA_MODEL=qwen3.5:9b npm run benchmark\n');
 }
 
 async function main(): Promise<void> {

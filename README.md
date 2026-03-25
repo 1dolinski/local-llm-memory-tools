@@ -20,15 +20,19 @@ Built on **Qwen 3.5 27B** via Ollama, **QMD** for vectorized memory/search, and 
 
 ### 1. Install Ollama
 
-Download from [ollama.com](https://ollama.com), then pull the model. Ollama only accepts **GGUF** weights: use the companion repo [`...-GGUF`](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF) (the [main model card](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled) is Safetensors and will error with *"not GGUF or not compatible with llama.cpp"*).
+Download from [ollama.com](https://ollama.com), then pull the **Ollama-library** build of the Opus-distilled Qwen3.5-27B model — same weights family as [Jackrong’s model card](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled), packaged for Ollama as [`kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF`](https://ollama.com/kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF).
+
+**Why not `hf.co/Jackrong/...-GGUF`?** Many people get a **~9–10GB blob and still see `unable to load model`** — a known Ollama/HF-ingest quirk ([HF discussion](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF/discussions/4)). The library name above loads reliably.
 
 ```bash
 # Install Ollama (macOS)
 brew install ollama
 
 # Pull and run (~10GB quantized; VRAM depends on quant — often ~16–17GB for Q4)
-ollama run hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+ollama run kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
 ```
+
+Other community builds: [`gag0/qwen35-opus-distil`](https://ollama.com/gag0/qwen35-opus-distil), [`sinhang/qwen3.5-claude-4.6-opus`](https://ollama.com/sinhang/qwen3.5-claude-4.6-opus).
 
 **Check speed after pull:** from the repo root, `npm run benchmark` prints completion `eval_count`, wall time, and **tok/s** (uses `OLLAMA_MODEL` from `.env` if set).
 
@@ -68,8 +72,8 @@ Your `.env` file should look like:
 # EVM private key for USDC payments via APINow (x402 protocol)
 PRIVATE_KEY=0xabc123...your_private_key_here
 
-# Optional: override the default model (Ollama = GGUF repo)
-# OLLAMA_MODEL=hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+# Optional: override the default model
+# OLLAMA_MODEL=kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
 ```
 
 Then start chatting:
@@ -83,23 +87,30 @@ npm run start:verbose
 
 ### Troubleshooting: `unable to load model` + blob `sha256-...`
 
-Ollama’s manifest can point at a **bad or truncated** weights blob (interrupted pull, disk glitch) even after `pull` says success. Or your **Ollama build is too old** for that GGUF.
+**If you pulled `hf.co/Jackrong/...-GGUF`:** the blob can be **full size (~9–10GB) and still not load** in Ollama. Switch to the library build (default in this repo):
+
+```bash
+ollama pull kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+npm run benchmark
+```
+
+**Otherwise:** truncated blob, old Ollama, or wrong daemon.
 
 1. **Quit Ollama** (menu bar → Quit), start it again.
-2. **Remove model + the exact blob from the error**, then pull again:
+2. **Remove the broken model + blob**, then pull again (use the hash from your error):
 
 ```bash
 ollama rm hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
 rm -f ~/.ollama/models/blobs/sha256-a15622267316636d22575f8ab25a61347eab59def966f257f572914812348c61
-ollama pull hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+ollama pull kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
 ```
 
 3. **Upgrade Ollama**: `brew upgrade ollama` (or reinstall from [ollama.com](https://ollama.com)).
 4. **Same daemon for pull and benchmark** — if you use Docker or a remote `OLLAMA_HOST`, blobs live elsewhere; pull where the API points.
-5. **Verify the blob size** — that file should be on the order of **~10GB**. If it’s tiny, it’s incomplete; delete it and re-pull.
+5. **Verify the blob size** — weights should be on the order of **~9–10GB**. If it’s tiny, it’s incomplete; delete it and re-pull.
 6. **Fallback**: `OLLAMA_MODEL=qwen3.5:9b npm run benchmark` after `ollama pull qwen3.5:9b`.
 
-`npm run benchmark` prints these steps automatically when it sees that 500 error.
+`npm run benchmark` prints repair hints when it sees that 500 error.
 
 ---
 
@@ -194,7 +205,7 @@ Built-in todo / upcoming / done lists managed through natural language. Tasks pe
 
 ```
   Chat Assistant  |  ollama + apinow + qmd
-  model: hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+  model: kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
   wallet: 0x...
   qmd: chat-memory (12 docs)
   commands: /tasks  /memory  /qmd  /clear  quit

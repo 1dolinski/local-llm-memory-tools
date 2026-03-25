@@ -21,10 +21,14 @@ config();
 const VERBOSE = process.argv.includes('--verbose') || process.argv.includes('-v');
 setVerbose(VERBOSE);
 
-/** Ollama needs the GGUF repo; the base HF Safetensors model cannot be pulled directly. */
+/**
+ * Default: Ollama-library build of the Opus-distilled Qwen3.5-27B GGUF.
+ * Pulling the same weights via `hf.co/Jackrong/...` often fails at load time in Ollama
+ * even when the blob size looks correct — use this name instead.
+ */
 const MODEL =
   process.env.OLLAMA_MODEL ||
-  'hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
+  'kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
 const MAX_HISTORY = 50;
 
 function isModelInstalled(model: string, available: string[]): boolean {
