@@ -12,22 +12,22 @@ This project solves three problems:
 
 2. **Your AI remembers you.** Hard facts and preferences are automatically extracted from every conversation and persisted in a vectorized local index. Your zodiac sign, your job, your allergies — mentioned once, remembered forever.
 
-3. **A 9B model gets real tool access.** A deterministic router handles API discovery, parameter extraction, and execution *before* the model even sees the message. The model stays focused on conversation while the router gives it capabilities that normally require 100B+ parameter models.
+3. **A powerful model gets real tool access.** A deterministic router handles API discovery, parameter extraction, and execution *before* the model even sees the message. The model stays focused on conversation while the router gives it capabilities that normally require 100B+ parameter models.
 
-Built on **Qwen 3.5:9B** via Ollama, **QMD** for vectorized memory/search, and **APINow** for x402-protocol paid API access.
+Built on **Qwen 3.5 27B** via Ollama, **QMD** for vectorized memory/search, and **APINow** for x402-protocol paid API access.
 
 ## Quick Start
 
 ### 1. Install Ollama
 
-Download from [ollama.com](https://ollama.com), then pull the model ([Qwen 3.5:9B](https://ollama.com/library/qwen3.5:latest)):
+Download from [ollama.com](https://ollama.com), then pull the model ([hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled)):
 
 ```bash
 # Install Ollama (macOS)
 brew install ollama
 
-# Pull and start Qwen 3.5:9B (~5.5GB)
-ollama run qwen3.5:9b
+# Pull and start Qwen3.5-27B Distilled (~16.5GB)
+ollama run hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled
 ```
 
 ### 2. Install QMD
@@ -65,7 +65,7 @@ Your `.env` file should look like:
 PRIVATE_KEY=0xabc123...your_private_key_here
 
 # Optional: override the default model
-# OLLAMA_MODEL=qwen3.5:9b
+# OLLAMA_MODEL=hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled
 ```
 
 Then start chatting:
@@ -79,9 +79,9 @@ npm run start:verbose
 
 ---
 
-## Why Qwen 3.5:9B?
+## Why Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled?
 
-Qwen 3.5:9B punches way above its weight class. It outperforms models 10-15x its size on several benchmarks and holds its own against frontier models — all while running locally at **~15 tok/s on an M5 MacBook Pro (24GB)**.
+This distilled Qwen3.5-27B model punches way above its weight class. By distilling Claude Opus's structural reasoning, it gains state-of-the-art Chain-of-Thought capabilities. It drastically outperforms the base model on stability and autonomy, specifically for tool calling — all while running locally at ~30 tok/s on consumer hardware (16.5GB VRAM).
 
 ![Qwen 3.5 Benchmarks](docs/qwen-benchmarks.png)
 
@@ -94,7 +94,7 @@ Qwen 3.5:9B punches way above its weight class. It outperforms models 10-15x its
 | **MMMU-Pro** (visual reasoning) | 70.1 | 63.0 | 59.7 | — |
 | **ERQA** (embodied reasoning) | 55.5 | 45.8 | 44.3 | — |
 
-The 9B size is the sweet spot for local inference — fast enough for real-time chat with tool calling, smart enough to handle multi-step reasoning, parameter extraction, and fact extraction without melting your laptop.
+The 27B size is the sweet spot for local inference — fast enough for real-time chat with tool calling, smart enough to handle multi-step reasoning, parameter extraction, and fact extraction.
 
 ## Architecture
 
@@ -170,7 +170,7 @@ Built-in todo / upcoming / done lists managed through natural language. Tasks pe
 
 ```
   Chat Assistant  |  ollama + apinow + qmd
-  model: qwen3.5:9b
+  model: hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled
   wallet: 0x...
   qmd: chat-memory (12 docs)
   commands: /tasks  /memory  /qmd  /clear  quit

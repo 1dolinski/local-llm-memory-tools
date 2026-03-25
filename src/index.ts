@@ -21,7 +21,7 @@ config();
 const VERBOSE = process.argv.includes('--verbose') || process.argv.includes('-v');
 setVerbose(VERBOSE);
 
-const MODEL = process.env.OLLAMA_MODEL || 'qwen3.5:9b';
+const MODEL = process.env.OLLAMA_MODEL || 'hf.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled';
 const MAX_HISTORY = 50;
 
 const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
