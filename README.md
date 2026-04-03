@@ -1,7 +1,7 @@
 # local-llm-memory-tools
 
 <p align="center">
-  <img src="docs/hero.svg" alt="" width="480" />
+  <img src="docs/hero.jpeg" alt="" width="480" />
 </p>
 
 <p align="center"><strong>Start building with local models</strong></p>
