@@ -3,30 +3,24 @@
  * Primary metric: eval_count / eval_duration (decode only — what people mean by "tok/s").
  * total_duration also includes model load + prompt prefill; first run is especially skewed.
  *
- * Usage: npm run benchmark
- * Optional: OLLAMA_MODEL, OLLAMA_HOST, BENCH_TOKENS (default 80), BENCH_NO_WARMUP=1
+ * Usage: npm run benchmark  (default model: gemma4)
+ * Optional: OLLAMA_MODEL, OLLAMA_HOST, BENCH_TOKENS (default 80), BENCH_NO_WARMUP=1,
+ *           BENCH_PROMPT (override generation task — default aims for a long decode)
  */
 import { config } from 'dotenv';
+import { decodeTokPerSec, nsToSec, resolveInstalledModel } from './benchmark-utils.js';
 
 config();
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
-const MODEL_REQUESTED =
-  process.env.OLLAMA_MODEL ||
-  'kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
+const MODEL_REQUESTED = process.env.OLLAMA_MODEL || 'gemma4';
 const NUM_PREDICT = Math.min(512, Math.max(16, Number(process.env.BENCH_TOKENS || 80)));
 const NO_WARMUP = process.env.BENCH_NO_WARMUP === '1';
 
-/** Use the exact tag Ollama registered (e.g. ...:latest) to avoid resolution quirks. */
-function resolveInstalledModel(requested: string, installed: string[]): string {
-  if (installed.includes(requested)) return requested;
-  const withLatest = `${requested}:latest`;
-  if (installed.includes(withLatest)) return withLatest;
-  const bare = requested.split(':')[0];
-  const matches = installed.filter((n) => n.split(':')[0] === bare);
-  if (matches.length === 0) return requested;
-  return matches.find((n) => n.endsWith(':latest')) ?? matches[0];
-}
+/** Long enough decode to stabilize tok/s (short answers hit EOS in a few tokens). */
+const BENCH_PROMPT =
+  process.env.BENCH_PROMPT ||
+  'List the US state names in alphabetical order, one per line. Keep going until you have listed all 50.';
 
 function printLoadFailureHelp(body: string, installedName: string): void {
   const m = body.match(/sha256-([a-f0-9]{64})/);
@@ -82,10 +76,6 @@ async function generate(model: string, prompt: string, numPredict: number): Prom
   return (await genRes.json()) as GenerateDone;
 }
 
-function nsToSec(n?: number): number {
-  return (n ?? 0) / 1e9;
-}
-
 async function main(): Promise<void> {
   const tagsRes = await fetch(`${OLLAMA_HOST}/api/tags`);
   if (!tagsRes.ok) {
@@ -126,11 +116,7 @@ async function main(): Promise<void> {
   const t0 = performance.now();
   let d: GenerateDone;
   try {
-    d = await generate(
-      MODEL,
-      'In one short sentence, what is 2+2?',
-      NUM_PREDICT
-    );
+    d = await generate(MODEL, BENCH_PROMPT, NUM_PREDICT);
   } catch (e: any) {
     console.error('Generate failed', e.status, e.body || e.message);
     if (e.status === 500 && String(e.body).includes('unable to load model')) {
@@ -157,7 +143,8 @@ async function main(): Promise<void> {
   console.log('wall_clock_s:', (wallMs / 1000).toFixed(2));
   console.log('');
   if (ev > 0 && evalSec > 0) {
-    console.log('tok/s (decode, eval_count / eval_duration):', (ev / evalSec).toFixed(2), '← use this for "how fast is generation"');
+    const dps = decodeTokPerSec(ev, d.eval_duration);
+    console.log('tok/s (decode, eval_count / eval_duration):', dps.toFixed(2), '← use this for "how fast is generation"');
   }
   if (ev > 0 && totalSec > 0) {
     console.log('tok/s (end-to-end, eval_count / total_duration):', (ev / totalSec).toFixed(2), '(includes prefill; inflated if no warmup)');

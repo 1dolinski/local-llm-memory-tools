@@ -14,29 +14,57 @@ This project solves three problems:
 
 3. **A powerful model gets real tool access.** A deterministic router handles API discovery, parameter extraction, and execution *before* the model even sees the message. The model stays focused on conversation while the router gives it capabilities that normally require 100B+ parameter models.
 
-Built on **Qwen 3.5 27B** via Ollama, **QMD** for vectorized memory/search, and **APINow** for x402-protocol paid API access.
+Built on **Gemma 4** via Ollama (default `gemma4` → resolves to `gemma4:latest`), **QMD** for vectorized memory/search, and **APINow** for x402-protocol paid API access.
 
 ## Quick Start
 
 ### 1. Install Ollama
 
-Download from [ollama.com](https://ollama.com), then pull the **Ollama-library** build of the Opus-distilled Qwen3.5-27B model — same weights family as [Jackrong’s model card](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled), packaged for Ollama as [`kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF`](https://ollama.com/kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF).
-
-**Why not `hf.co/Jackrong/...-GGUF`?** Many people get a **~9–10GB blob and still see `unable to load model`** — a known Ollama/HF-ingest quirk ([HF discussion](https://huggingface.co/Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF/discussions/4)). The library name above loads reliably.
+Download from [ollama.com](https://ollama.com), then pull **Gemma 4** (default for this repo):
 
 ```bash
 # Install Ollama (macOS)
 brew install ollama
 
-# Pull and run (~10GB quantized; VRAM depends on quant — often ~16–17GB for Q4)
-ollama run kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+ollama pull gemma4
 ```
 
-Other community builds: [`gag0/qwen35-opus-distil`](https://ollama.com/gag0/qwen35-opus-distil), [`sinhang/qwen3.5-claude-4.6-opus`](https://ollama.com/sinhang/qwen3.5-claude-4.6-opus).
+The app uses `OLLAMA_MODEL` from `.env` if set; otherwise it uses `gemma4` (matches `gemma4:latest` when that tag exists).
 
-**Check speed after pull:** `npm run benchmark` runs a short **warmup** then reports **tok/s from decode time** (`eval_count / eval_duration`). The older “total_duration only” number mixes model load + prompt prefill + generation and looks artificially low (e.g. ~1 tok/s on a fast machine). Uses `OLLAMA_MODEL` from `.env` if set.
+**Alternative — heavier reasoning model:** the Opus-distilled Qwen3.5-27B build [`kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF`](https://ollama.com/kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF) (see [Why Qwen3.5-27B…](#why-qwen35-27b-claude-46-opus-reasoning-distilled) below). **Why not `hf.co/Jackrong/...-GGUF`?** Many people get **`unable to load model`** — use the library name above.
 
-Smaller GPU? Use a lighter model, e.g. `OLLAMA_MODEL=qwen3.5:9b` after `ollama pull qwen3.5:9b`.
+**Smaller GPU:** `OLLAMA_MODEL=qwen3.5:9b` after `ollama pull qwen3.5:9b`, or another smaller Ollama model.
+
+### Benchmark (Gemma 4)
+
+Measures **decode throughput** (`eval_count / eval_duration`), not end-to-end wall time mixed with load/prefill.
+
+**How to run (Gemma 4):**
+
+```bash
+ollama pull gemma4
+npm run benchmark
+# explicit:
+npm run benchmark:gemma4
+```
+
+Optional env: `BENCH_TOKENS` (default `80`), `BENCH_NO_WARMUP=1`, `OLLAMA_HOST`, `BENCH_PROMPT` (override the long-generation prompt).
+
+**Automated tests** (pure helpers, no Ollama required):
+
+```bash
+npm test
+```
+
+**Sample results** (one run, `gemma4:latest`, `BENCH_TOKENS=80`, warmup on, macOS dev machine, 2026-04-03):
+
+| Metric | Value |
+|--------|--------|
+| `eval_count` (completion tokens) | 80 |
+| Decode **tok/s** (`eval_count / eval_duration`) | **27.34** |
+| End-to-end tok/s (`eval_count / total_duration`) | 24.63 |
+
+Your hardware will differ; use the decode tok/s line as the apples-to-apples number.
 
 ### 2. Install QMD
 
@@ -72,8 +100,8 @@ Your `.env` file should look like:
 # EVM private key for USDC payments via APINow (x402 protocol)
 PRIVATE_KEY=0xabc123...your_private_key_here
 
-# Optional: override the default model
-# OLLAMA_MODEL=kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+# Optional: override the default model (default is gemma4)
+# OLLAMA_MODEL=gemma4
 ```
 
 Then start chatting:
@@ -87,9 +115,11 @@ npm run start:verbose
 
 ### Troubleshooting: `unable to load model` + blob `sha256-...`
 
-**If you pulled `hf.co/Jackrong/...-GGUF`:** the blob can be **full size (~9–10GB) and still not load** in Ollama. Switch to the library build (default in this repo):
+**If you pulled `hf.co/Jackrong/...-GGUF`:** the blob can be **full size (~9–10GB) and still not load** in Ollama. Switch to the library build or use the default **Gemma 4** model:
 
 ```bash
+ollama pull gemma4
+# or the Qwen Opus-distilled build:
 ollama pull kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
 npm run benchmark
 ```
@@ -205,7 +235,7 @@ Built-in todo / upcoming / done lists managed through natural language. Tasks pe
 
 ```
   Chat Assistant  |  ollama + apinow + qmd
-  model: kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF
+  model: gemma4:latest
   wallet: 0x...
   qmd: chat-memory (12 docs)
   commands: /tasks  /memory  /qmd  /clear  quit

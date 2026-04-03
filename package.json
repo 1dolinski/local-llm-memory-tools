@@ -6,7 +6,9 @@
     "start": "tsx src/index.ts",
     "start:verbose": "tsx src/index.ts --verbose",
     "benchmark": "tsx scripts/benchmark.ts",
-    "benchmark:9b": "OLLAMA_MODEL=qwen3.5:9b tsx scripts/benchmark.ts"
+    "benchmark:gemma4": "OLLAMA_MODEL=gemma4 tsx scripts/benchmark.ts",
+    "benchmark:9b": "OLLAMA_MODEL=qwen3.5:9b tsx scripts/benchmark.ts",
+    "test": "tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
     "ollama": "^0.5.0",

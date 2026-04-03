@@ -21,14 +21,7 @@ config();
 const VERBOSE = process.argv.includes('--verbose') || process.argv.includes('-v');
 setVerbose(VERBOSE);
 
-/**
- * Default: Ollama-library build of the Opus-distilled Qwen3.5-27B GGUF.
- * Pulling the same weights via `hf.co/Jackrong/...` often fails at load time in Ollama
- * even when the blob size looks correct — use this name instead.
- */
-const MODEL =
-  process.env.OLLAMA_MODEL ||
-  'kwangsuklee/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-GGUF';
+const MODEL = process.env.OLLAMA_MODEL || 'gemma4';
 const MAX_HISTORY = 50;
 
 function isModelInstalled(model: string, available: string[]): boolean {
