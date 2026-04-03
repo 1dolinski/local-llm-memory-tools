@@ -144,7 +144,7 @@ export const tools: Tool[] = [
     function: {
       name: 'call_api',
       description:
-        'Execute a paid API call on APINow. Provide namespace and endpoint from search results. Payment handled automatically. Example: namespace="gg402", endpoint="horoscope", body={"zodiac_sign":"Cancer"}',
+        'Execute a paid API call on APINow. Provide namespace and endpoint from search results. Payment handled automatically. Example: namespace="acme", endpoint="weather", body={"city":"Paris"}',
       parameters: {
         type: 'object',
         properties: {
@@ -154,7 +154,7 @@ export const tools: Tool[] = [
           },
           endpoint: {
             type: 'string',
-            description: 'Endpoint name from search results (e.g. "horoscope")',
+            description: 'Endpoint name from search results (e.g. "weather", "translate")',
           },
           body: {
             type: 'object',
@@ -377,7 +377,7 @@ export const tools: Tool[] = [
     function: {
       name: 'add_cron',
       description:
-        'Schedule a recurring task. The prompt runs automatically on the cron schedule. Example: expression="0 8 * * *" (daily 8am), prompt="get my horoscope"',
+        'Schedule a recurring task. The prompt runs automatically on the cron schedule. Example: expression="0 8 * * *" (daily 8am), prompt="what is on my task list today"',
       parameters: {
         type: 'object',
         properties: {
