@@ -1,4 +1,4 @@
-# About local-llm-memory-tools
+# About Hammock AI
 
 Cloud AI knows everything about you and nothing stays on your machine. Your conversations, preferences, and context live on someone else's server. Local models fix the privacy problem but create new ones — they forget everything between sessions, can't search their own history, and have no way to call external services.
 
@@ -48,8 +48,8 @@ npm install -g @tobilu/qmd
 ### 4. Clone & env
 
 ```bash
-git clone https://github.com/1dolinski/local-llm-memory-tools.git
-cd local-llm-memory-tools
+git clone https://github.com/1dolinski/hammock-ai.git
+cd hammock-ai
 npm install
 cp .env.example .env
 # Edit .env — PRIVATE_KEY required; OLLAMA_MODEL optional (default gemma4)
@@ -178,7 +178,7 @@ Todo / upcoming / done lists, persisted across sessions.
 ## Usage example
 
 ```
-  Chat Assistant  |  ollama + apinow + qmd
+  Hammock AI  |  ollama + apinow + qmd
   model: gemma4:latest
   wallet: 0x...
   qmd: chat-memory (12 docs)

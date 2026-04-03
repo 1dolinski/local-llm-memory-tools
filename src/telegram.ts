@@ -13,7 +13,7 @@ export function setTelegramChatFn(fn: ChatFn): void {
 export async function startTelegramBot(token: string): Promise<void> {
   const bot = new Bot(token);
 
-  bot.command('start', (ctx) => ctx.reply('Connected to local-llm-memory-tools. Send any message to chat.'));
+  bot.command('start', (ctx) => ctx.reply('Connected to Hammock AI. Send any message to chat.'));
   bot.command('tasks', (ctx) => handleSlash(ctx, '/tasks'));
   bot.command('memory', (ctx) => handleSlash(ctx, '/memory'));
   bot.command('qmd', (ctx) => handleSlash(ctx, '/qmd'));

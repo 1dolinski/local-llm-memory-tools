@@ -1,4 +1,4 @@
-# local-llm-memory-tools
+# Hammock AI
 
 <p align="center">
   <img src="docs/hero.jpeg" alt="" width="480" />
@@ -30,8 +30,8 @@ Pull the default model, then this app:
 
 ```bash
 ollama pull gemma4
-git clone https://github.com/1dolinski/local-llm-memory-tools.git
-cd local-llm-memory-tools
+git clone https://github.com/1dolinski/hammock-ai.git
+cd hammock-ai
 npm install
 cp .env.example .env
 # set PRIVATE_KEY (USDC on Base for APINow) — optional: OLLAMA_MODEL

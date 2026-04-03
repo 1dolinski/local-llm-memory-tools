@@ -311,7 +311,7 @@ async function main() {
   const docCount = docMatch ? docMatch[1] : '0';
 
   console.log('');
-  console.log(cyan('  Chat Assistant  |  ollama + apinow + qmd'));
+  console.log(cyan('  Hammock AI  |  ollama + apinow + qmd'));
   console.log(dim(`  model: ${MODEL}`));
   console.log(dim(`  wallet: ${apinow.wallet}`));
   console.log(dim(`  qmd: chat-memory (${docCount} docs)`));
